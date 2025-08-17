@@ -128,18 +128,26 @@ export default function ContactForm() {
     setSubmissionError(null)
     
     try {
-      const response = await fetch('/api/contact', {
+      // Submit to FormSubmit
+      const formData = new FormData()
+      formData.append('serviceType', sanitizedData.serviceType)
+      formData.append('propertyType', sanitizedData.propertyType)
+      formData.append('squareFootage', sanitizedData.squareFootage?.toString() || '')
+      formData.append('frequency', sanitizedData.frequency || '')
+      formData.append('firstName', sanitizedData.firstName)
+      formData.append('lastName', sanitizedData.lastName)
+      formData.append('email', sanitizedData.email)
+      formData.append('phone', sanitizedData.phone)
+      formData.append('preferredDate', sanitizedData.preferredDate || '')
+      formData.append('howDidYouHear', sanitizedData.howDidYouHear || '')
+      formData.append('message', sanitizedData.message || '')
+      formData.append('_subject', `New Cleaning Lead: ${sanitizedData.firstName} ${sanitizedData.lastName}`)
+      formData.append('_template', 'table')
+      formData.append('_captcha', 'false')
+
+      const response = await fetch('https://formsubmit.co/sparklesavcleaning@gmail.com', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest', // CSRF protection header
-        },
-        body: JSON.stringify({
-          ...sanitizedData,
-          submittedAt: new Date().toISOString(),
-          userAgent: navigator.userAgent,
-          timestamp: now,
-        }),
+        body: formData,
       })
 
       console.log('Response status:', response.status)
@@ -148,13 +156,11 @@ export default function ContactForm() {
         console.log('=== SUBMISSION SUCCESS ===')
         setIsSubmitted(true)
       } else {
-        const errorData = await response.json().catch(() => ({}))
-        console.log('Response error:', errorData)
-        throw new Error(errorData.message || 'Failed to submit form')
+        throw new Error('Failed to submit form')
       }
     } catch (error) {
       console.error('Form submission error:', error)
-      setSubmissionError(error instanceof Error ? error.message : 'There was an error submitting your request. Please try again.')
+      setSubmissionError('There was an error submitting your request. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -268,19 +274,38 @@ export default function ContactForm() {
         </motion.div>
 
         <div className="max-w-4xl mx-auto">
-                               <form onSubmit={(e) => {
-            e.preventDefault() // Always prevent default first
-            if (currentStep !== 4) {
-              console.log('Form submission prevented: not on step 4')
-              return
-            }
-            // Only allow submission on step 4
-            handleSubmit(onSubmit)(e)
-          }} onKeyDown={(e) => {
-            if (e.key === 'Enter' && currentStep !== 4) {
-              e.preventDefault()
-            }
-          }} className="bg-white rounded-2xl shadow-xl p-8">
+          <form 
+            action="https://formsubmit.co/sparklesavcleaning@gmail.com" 
+            method="POST"
+            onSubmit={(e) => {
+              e.preventDefault() // Always prevent default first
+              if (currentStep !== 4) {
+                console.log('Form submission prevented: not on step 4')
+                return
+              }
+              // Only allow submission on step 4
+              handleSubmit(onSubmit)(e)
+            }} 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && currentStep !== 4) {
+                e.preventDefault()
+              }
+            }} 
+            className="bg-white rounded-2xl shadow-xl p-8"
+          >
+            {/* Hidden fields for FormSubmit */}
+            <input type="hidden" name="serviceType" value={watchedServiceType || ''} />
+            <input type="hidden" name="propertyType" value={watch('propertyType') || ''} />
+            <input type="hidden" name="squareFootage" value={watch('squareFootage') || ''} />
+            <input type="hidden" name="frequency" value={watch('frequency') || ''} />
+            <input type="hidden" name="firstName" value={watchedFirstName || ''} />
+            <input type="hidden" name="lastName" value={watchedLastName || ''} />
+            <input type="hidden" name="email" value={watchedEmail || ''} />
+            <input type="hidden" name="phone" value={watchedPhone || ''} />
+            <input type="hidden" name="preferredDate" value={watch('preferredDate') || ''} />
+            <input type="hidden" name="howDidYouHear" value={watch('howDidYouHear') || ''} />
+            <input type="hidden" name="message" value={watch('message') || ''} />
+            
             {/* Progress Bar */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
