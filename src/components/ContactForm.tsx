@@ -51,23 +51,7 @@ export default function ContactForm() {
   const watchedEmail = watch('email')
   const watchedPhone = watch('phone')
 
-  // ===== DEBUGGING =====
-  useEffect(() => {
-    console.log('=== FORM DEBUG ===')
-    console.log('Current Step:', currentStep)
-    console.log('Is Valid:', isValid)
-    console.log('Is Dirty:', isDirty)
-    console.log('Errors:', errors)
-    console.log('Watched Values:', {
-      serviceType: watchedServiceType,
-      propertyType: watchedPropertyType,
-      firstName: watchedFirstName,
-      lastName: watchedLastName,
-      email: watchedEmail,
-      phone: watchedPhone,
-    })
-    console.log('==================')
-  }, [currentStep, isValid, isDirty, errors, watchedServiceType, watchedPropertyType, watchedFirstName, watchedLastName, watchedEmail, watchedPhone])
+
 
   // ===== VALIDATION LOGIC =====
   const isStepValid = useCallback(() => {
@@ -97,8 +81,6 @@ export default function ContactForm() {
 
   // ===== SECURITY & SUBMISSION HANDLING =====
   const onSubmit = useCallback(async (data: ContactFormData) => {
-    console.log('=== SUBMISSION STARTED ===')
-    console.log('Form Data:', data)
     
     // Rate limiting check
     const now = Date.now()
@@ -150,16 +132,12 @@ export default function ContactForm() {
         body: formData,
       })
 
-      console.log('Response status:', response.status)
-      
       if (response.ok) {
-        console.log('=== SUBMISSION SUCCESS ===')
         setIsSubmitted(true)
       } else {
         throw new Error('Failed to submit form')
       }
     } catch (error) {
-      console.error('Form submission error:', error)
       setSubmissionError('There was an error submitting your request. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -168,17 +146,11 @@ export default function ContactForm() {
 
   // ===== NAVIGATION HANDLERS =====
   const nextStep = useCallback(async () => {
-    console.log('=== NEXT STEP ===')
-    console.log('Current step:', currentStep)
-    console.log('Is step valid:', isStepValid())
-    
     if (currentStep < 4) {
       // Validate current step before proceeding
       const fieldsToValidate = getFieldsForStep(currentStep)
-      console.log('Fields to validate:', fieldsToValidate)
       
       const isValid = await trigger(fieldsToValidate)
-      console.log('Trigger result:', isValid)
       
       if (isValid) {
         // Clear any errors before moving to next step
@@ -280,7 +252,6 @@ export default function ContactForm() {
             onSubmit={(e) => {
               e.preventDefault() // Always prevent default first
               if (currentStep !== 4) {
-                console.log('Form submission prevented: not on step 4')
                 return
               }
               // Only allow submission on step 4
@@ -333,11 +304,7 @@ export default function ContactForm() {
               </div>
             </div>
 
-            {/* Debug Info */}
-            <div className="mb-4 p-3 bg-gray-100 rounded text-xs">
-              <div>Debug: Step {currentStep}, Valid: {isValid ? 'Yes' : 'No'}, Dirty: {isDirty ? 'Yes' : 'No'}</div>
-              <div>Errors: {Object.keys(errors).length > 0 ? Object.keys(errors).join(', ') : 'None'}</div>
-            </div>
+
 
             {/* Error Display */}
             {submissionError && (
@@ -371,7 +338,6 @@ export default function ContactForm() {
                         key={service.value}
                         type="button"
                         onClick={() => {
-                          console.log('Setting service type:', service.value)
                           setValue('serviceType', service.value)
                         }}
                         className={cn(
